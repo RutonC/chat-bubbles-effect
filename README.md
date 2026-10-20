@@ -99,6 +99,16 @@ tests/                testes Node (node:test)
 
 Como a cena é uma função pura de `t`, o ecrã e a gravação mostram exatamente o mesmo, e pausar/reiniciar são triviais.
 
+## Resolução de problemas
+
+| Sintoma | O que fazer |
+| --- | --- |
+| **Bad Gateway** no Dokploy | No separador *Domains*, a porta do domínio tem de ser **80** (a do nginx do contentor). Guarda e faz *Deploy* de novo. |
+| Vejo uma versão antiga depois de atualizar | O service worker guarda a versão anterior: **Ctrl+Shift+R** (ou *DevTools → Application → Service Workers → Unregister*). |
+| O vídeo gravado não tem som | Confirma «Exportar sem som» desligado e o som de tecla diferente de «Sem som de teclas». A pré-visualização avisa se a gravação ou o ficheiro ficaram mudos. Usa o formato **WebM** (por defeito) e abre no VLC/Chrome. |
+| Não ouço sons ao testar | O navegador só deixa tocar áudio depois de um clique ou tecla na página. |
+| Letras/emojis diferentes do esperado | A app usa as fontes do sistema; o aspeto varia entre sistemas operativos. |
+
 ## Navegadores e limitações
 
 Verificado automaticamente em **Chromium 141** (o mesmo motor do Chrome e do Edge): reprodução, modo limpo, gravação 1920×1080 com áudio (o ficheiro resultante foi analisado com `ffprobe`), descarregar/descartar e libertação da memória, e interface em ecrã de telemóvel. **Firefox não foi testado** neste ambiente; o que se segue para ele vem da documentação de compatibilidade, não de testes.
