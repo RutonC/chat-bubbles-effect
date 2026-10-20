@@ -32,14 +32,15 @@ function describe(mime) {
   return { mime, ext, label };
 }
 
-/** Escolhe o melhor formato: MP4 se existir, senão WebM. null = sem suporte. */
-export function pickFormat({ withAudio, transparent }) {
+/** Escolhe o formato segundo a preferência (webm por defeito; mp4 só se suportado). null = sem suporte. */
+export function pickFormat({ withAudio, transparent, prefer = 'webm' }) {
   const key = withAudio ? 'audio' : 'video';
   if (transparent) {
     const m = supported(['video/webm;codecs=vp9' + (withAudio ? ',opus' : ''), 'video/webm;codecs=vp9']);
     return m ? describe(m) : null;
   }
-  const mime = supported(MP4[key]) || supported(WEBM[key]);
+  const order = prefer === 'mp4' ? [MP4, WEBM] : [WEBM, MP4];
+  const mime = supported(order[0][key]) || supported(order[1][key]);
   return mime ? describe(mime) : null;
 }
 

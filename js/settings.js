@@ -72,7 +72,7 @@ export const DEFAULTS = {
     offset: 0,
   },
   present: { countdown: true, hideCursor: true },
-  record: { format: '16:9', fps: 30, mute: false },
+  record: { format: '16:9', fps: 30, mute: false, prefer: 'webm' },
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);

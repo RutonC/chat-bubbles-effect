@@ -232,7 +232,7 @@ function showBar() {
 function recordSetup() {
   const withAudio = !settings.get('record.mute');
   const transparent = settings.get('background.type') === 'transparent';
-  return { withAudio, transparent };
+  return { withAudio, transparent, prefer: settings.get('record.prefer') };
 }
 
 async function startRecording() {
@@ -241,7 +241,7 @@ async function startRecording() {
     rebuild();
     if (!hasMessages()) return;
   }
-  let { withAudio, transparent } = recordSetup();
+  let { withAudio, transparent, prefer } = recordSetup();
   if (withAudio && !audio.ensure()) {
     toast(t('toast.noAudio'));
     withAudio = false;
@@ -254,12 +254,12 @@ async function startRecording() {
     }
     if (audio.ctx.state !== 'running') toast(t('toast.audioBlocked'), 4500);
   }
-  let format = pickFormat({ withAudio, transparent });
+  let format = pickFormat({ withAudio, transparent, prefer });
   if (transparent && !format) {
     toast(t('toast.transparentFallback'), 4500);
     transparent = false;
     renderer.bgOverride = '#00B140';
-    format = pickFormat({ withAudio, transparent });
+    format = pickFormat({ withAudio, transparent, prefer });
   }
   if (!format) {
     renderer.bgOverride = undefined;
@@ -337,7 +337,23 @@ function exitRecordingMode() {
   if (state.live) liveInput.focus();
 }
 
-function showPreview(blob, info) {
+/** Descodifica o áudio do ficheiro final e devolve o pico (null se não for possível ler). */
+async function fileAudioPeak(blob) {
+  if (!audio.ctx || blob.size > 150e6) return null;
+  try {
+    const buf = await audio.ctx.decodeAudioData(await blob.arrayBuffer());
+    let peak = 0;
+    for (let c = 0; c < buf.numberOfChannels; c++) {
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < d.length; i += 7) peak = Math.max(peak, Math.abs(d[i]));
+    }
+    return peak;
+  } catch {
+    return null;
+  }
+}
+
+async function showPreview(blob, info) {
   const url = URL.createObjectURL(blob);
   const name = fileName(info.format.ext);
   preview = { blob, url, name };
@@ -347,7 +363,10 @@ function showPreview(blob, info) {
   $('#previewInfo').textContent = t('rec.info', { fmt: info.format.label, size, name });
   const warn = $('#previewWarn');
   const notes = [];
-  if (info.withAudio && recorder.audioPeak < 0.002) notes.push(t('rec.noAudio'));
+  const sent = recorder.audioPeak;
+  const filePeak = info.withAudio && sent >= 0.002 ? await fileAudioPeak(blob) : null;
+  if (filePeak !== null && filePeak < 0.002) notes.push(t('rec.fileSilent'));
+  if (info.withAudio && sent < 0.002) notes.push(t('rec.noAudio'));
   if (info.withAudio && info.format.ext === 'mp4' && /opus/i.test(recorder.actualMime)) notes.push(t('rec.opusMp4'));
   if (info.hidden) notes.push(t('rec.hiddenWarn'));
   if (info.transparent) notes.push(t('rec.transparentNote'));

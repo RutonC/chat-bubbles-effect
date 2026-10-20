@@ -111,6 +111,7 @@ const SECTIONS = [
     fields: [
       { type: 'select', path: 'record.format', options: ['16:9', '9:16', '1:1'], optKey: (v) => `o.format.${v}` },
       { type: 'select', path: 'record.fps', options: FPS },
+      { type: 'select', path: 'record.prefer', options: ['webm', 'mp4'], optKey: (v) => `o.prefer.${v}` },
       { type: 'toggle', path: 'record.mute' },
       { type: 'custom', name: 'recordInfo' },
     ],
