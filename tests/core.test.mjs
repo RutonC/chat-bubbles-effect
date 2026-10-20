@@ -92,3 +92,34 @@ test('i18n: rótulos de campos do painel existem', () => {
     assert.ok(p.split('.').reduce((o, k) => o?.[k], DEFAULTS) !== undefined, `default ${p}`);
   }
 });
+
+import { LiveSession } from '../js/live.js';
+
+test('live: escrever, resposta com ">", apagar e enviar', () => {
+  const s = new LiveSession();
+  s.type('H'); s.type('i');
+  assert.deepEqual(s.timeline.msgs[0].chars, ['H', 'i']);
+  assert.equal(s.timeline.msgs[0].charTimes.length, 2);
+  assert.equal(s.send(), true);
+  assert.equal(s.timeline.msgs[0].textEnd < Infinity, true);
+  s.type('>'); s.type('o'); // resposta
+  assert.equal(s.timeline.msgs[1].side, 'right');
+  assert.deepEqual(s.timeline.msgs[1].chars, ['o']);
+  s.backspace(); s.backspace(); // apaga o texto e depois cancela o balão vazio
+  assert.equal(s.timeline.msgs.length, 1);
+  assert.equal(s.send(), false);
+});
+
+test('live: versão muda a cada edição (invalida o layout em cache)', () => {
+  const s = new LiveSession();
+  s.type('a');
+  const v = s.timeline.msgs[0].version;
+  s.type('b');
+  assert.ok(s.timeline.msgs[0].version > v);
+});
+
+test('live: ignora espaços no início da mensagem (ex.: "> texto")', () => {
+  const s = new LiveSession();
+  s.type('>'); s.type(' '); s.type('o'); s.type(' '); s.type('k');
+  assert.deepEqual(s.timeline.msgs[0].chars, ['o', ' ', 'k']);
+});

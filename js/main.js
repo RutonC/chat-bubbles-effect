@@ -6,6 +6,7 @@ import { buildTimeline } from './timeline.js';
 import { Renderer } from './renderer.js';
 import { AudioEngine } from './audio.js';
 import { Player } from './player.js';
+import { LiveSession } from './live.js';
 import { VideoRecorder, FORMATS, pickFormat, fileName } from './recorder.js';
 import { LANGUAGES, setLang, applyI18n, t } from './i18n.js';
 import { $, toast, downloadBlob, buildPanel } from './ui.js';
@@ -24,7 +25,10 @@ let timeline = null;
 let pendingRebuild = false;
 let counting = false;
 let cdToken = 0;
-const state = { clean: false, recording: false, wasClean: false, rec: null };
+const state = { clean: false, recording: false, wasClean: false, rec: null, live: false };
+const live = new LiveSession();
+let liveRaf = 0;
+const liveInput = $('#liveInput');
 let preview = null; // { blob, url, name }
 
 // ---------- linha do tempo e reprodução ----------
@@ -47,7 +51,7 @@ function requestRebuild() {
 
 const player = new Player({
   onFrame: (tm) => renderer.draw(timeline, tm),
-  onSound: (kind, delay) => audio.play(kind, undefined, delay),
+  onSound: (kind, delay, ch) => audio.play(kind, undefined, delay, ch),
   onState: () => syncPlayUI(),
   onEnd: () => {
     if (state.recording) finishRecording();
@@ -55,6 +59,7 @@ const player = new Player({
 });
 
 function redraw() {
+  if (state.live) return renderer.draw(live.timeline, live.now());
   if (player.state === 'playing') return;
   if (!timeline) return;
   const tm = player.state === 'idle' ? (timeline.msgs.length ? timeline.previewT : -1) : player.t;
@@ -99,6 +104,7 @@ function cancelCountdown() {
 }
 
 async function startPlayback({ countdown = false } = {}) {
+  if (state.live) setLive(false);
   rebuild();
   if (!hasMessages()) return;
   audio.ensure();
@@ -111,6 +117,7 @@ async function startPlayback({ countdown = false } = {}) {
 }
 
 function togglePlay() {
+  if (state.live) return startPlayback();
   if (counting) {
     cancelCountdown();
     redraw();
@@ -208,6 +215,8 @@ async function setClean(on, { fullscreen = true } = {}) {
     }
   }
   layoutStage();
+  updateLiveHint();
+  if (state.live) liveInput.focus();
 }
 
 let barTimer = 0;
@@ -228,8 +237,10 @@ function recordSetup() {
 
 async function startRecording() {
   if (state.recording) return;
-  rebuild();
-  if (!hasMessages()) return;
+  if (!state.live) {
+    rebuild();
+    if (!hasMessages()) return;
+  }
   let { withAudio, transparent } = recordSetup();
   if (withAudio && !audio.ensure()) {
     toast(t('toast.noAudio'));
@@ -252,12 +263,14 @@ async function startRecording() {
   player.stop();
   state.recording = true;
   state.wasClean = state.clean;
-  state.rec = { format, withAudio, transparent, hidden: false, fps: settings.get('record.fps') };
+  state.rec = { format, withAudio, transparent, hidden: false, fps: settings.get('record.fps'), live: state.live };
   body.classList.add('recording');
   await setClean(true, { fullscreen: false });
   body.classList.remove('bar-visible');
   layoutStage();
-  renderer.draw(timeline, -1);
+  if (state.live) live.reset();
+  renderer.draw(state.live ? live.timeline : timeline, -1);
+  updateLiveHint();
 
   const ok = await runCountdown(3);
   if (!ok || !state.recording) return;
@@ -269,14 +282,18 @@ async function startRecording() {
     exitRecordingMode();
     return;
   }
-  player.start();
+  if (state.live) {
+    live.reset(); // o relógio começa quando a gravação começa
+    liveInput.focus();
+  } else player.start();
 }
 
 async function finishRecording() {
   if (!state.recording || state.rec.finishing) return;
   const info = state.rec;
   info.finishing = true;
-  renderer.draw(timeline, player.t);
+  if (info.live) await new Promise((r) => setTimeout(r, settings.get('timing.endWait') * 1000));
+  else renderer.draw(timeline, player.t);
   await new Promise((r) => setTimeout(r, 250)); // deixa o último fotograma entrar no vídeo
   let blob;
   try {
@@ -303,11 +320,13 @@ function cancelRecording() {
 
 function exitRecordingMode() {
   state.recording = false;
+  updateLiveHint();
   state.rec = null;
   renderer.bgOverride = undefined;
   body.classList.remove('recording');
   if (!state.wasClean) setClean(false);
   else layoutStage();
+  if (state.live) liveInput.focus();
 }
 
 function showPreview(blob, info) {
@@ -347,6 +366,93 @@ $('#dlgPreview').addEventListener('close', releasePreview);
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && state.recording && state.rec && recorder.active) state.rec.hidden = true;
+});
+
+// ---------- escrever ao vivo ----------
+
+function updateLiveHint() {
+  $('#liveHint').hidden = !(state.live && !state.clean && !state.recording && !live.hasMessages);
+}
+
+function liveLoop() {
+  if (!state.live) return;
+  renderer.draw(live.timeline, live.now());
+  updateLiveHint();
+  liveRaf = requestAnimationFrame(liveLoop);
+}
+
+function setLive(on) {
+  if (on === state.live) return;
+  state.live = on;
+  body.classList.toggle('live', on);
+  $('#btnLive').setAttribute('aria-pressed', String(on));
+  cancelAnimationFrame(liveRaf);
+  if (on) {
+    cancelCountdown();
+    player.stop();
+    live.reset();
+    audio.ensure();
+    liveInput.focus();
+    liveLoop();
+  } else {
+    liveInput.blur();
+    updateLiveHint();
+    redraw();
+  }
+}
+
+const pressed = new Map(); // e.code -> kind (para o som de soltar)
+
+function liveSend() {
+  if (!live.send()) return;
+  audio.play('enter', undefined, 0, '', { autoRelease: false });
+  audio.play('sent', undefined, 0.02);
+  audio.play('ding', undefined, 0.02);
+}
+
+liveInput.addEventListener('keydown', (e) => {
+  if (!state.live || e.ctrlKey || e.metaKey || e.altKey || e.key === 'Escape' || e.isComposing) return;
+  const key = e.key;
+  if (key === 'Unidentified' || key === 'Process' || key === 'Dead') return; // tratado em beforeinput
+  if (key === 'Enter') {
+    e.preventDefault();
+    if (e.shiftKey) {
+      live.type('\n');
+      audio.play('enter', undefined, 0, '', { autoRelease: false });
+    } else liveSend();
+    if (!pressed.has(e.code)) pressed.set(e.code, 'enter');
+  } else if (key === 'Backspace') {
+    e.preventDefault();
+    if (live.backspace()) audio.play('key', undefined, 0, '\b', { autoRelease: false });
+    pressed.set(e.code, 'key');
+  } else if ([...key].length === 1) {
+    e.preventDefault();
+    const kind = key === ' ' ? 'space' : 'key';
+    live.type(key);
+    audio.play(kind, undefined, 0, key, { autoRelease: false });
+    pressed.set(e.code, kind);
+  }
+});
+liveInput.addEventListener('keyup', (e) => {
+  const kind = pressed.get(e.code);
+  if (kind) {
+    pressed.delete(e.code);
+    audio.release(kind);
+  }
+});
+liveInput.addEventListener('blur', () => pressed.clear());
+// Teclados de telemóvel, IME e colar: não têm keydown fiável.
+liveInput.addEventListener('beforeinput', (e) => {
+  if (!state.live) return;
+  e.preventDefault();
+  if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') liveSend();
+  else if (e.inputType === 'deleteContentBackward') {
+    if (live.backspace()) audio.play('key', undefined, 0, '\b');
+  } else {
+    const text = e.data ?? e.dataTransfer?.getData('text/plain') ?? '';
+    for (const ch of text) live.type(ch === '\n' ? '\n' : ch);
+    if (text) audio.play(text === ' ' ? 'space' : 'key', undefined, 0, text[0]);
+  }
 });
 
 // ---------- roteiro (modal) ----------
@@ -527,7 +633,8 @@ function setPanel(open) {
 
 $('#btnScript').addEventListener('click', openScript);
 $('#btnPlay').addEventListener('click', togglePlay);
-$('#btnRestart').addEventListener('click', restart);
+$('#btnLive').addEventListener('click', () => setLive(!state.live));
+$('#btnRestart').addEventListener('click', () => (state.live ? live.reset() : restart()));
 $('#btnClean').addEventListener('click', () => setClean(true));
 $('#btnRecord').addEventListener('click', () => (state.recording ? finishRecording() : startRecording()));
 $('#btnSettings').addEventListener('click', () => setPanel(!body.classList.contains('panel-open')));
@@ -535,7 +642,7 @@ $('#panelClose').addEventListener('click', () => setPanel(false));
 $('#panelBackdrop').addEventListener('click', () => setPanel(false));
 $('#btnHelp').addEventListener('click', () => $('#dlgHowto').showModal());
 $('#cbPlay').addEventListener('click', togglePlay);
-$('#cbRestart').addEventListener('click', restart);
+$('#cbRestart').addEventListener('click', () => (state.live ? live.reset() : restart()));
 $('#cbExit').addEventListener('click', () => setClean(false));
 
 for (const dlg of document.querySelectorAll('dialog')) {
@@ -548,7 +655,10 @@ $('#dlgHowto').addEventListener('close', () => Onboarding.markSeen());
 
 const stageWrap = $('#stageWrap');
 stageWrap.addEventListener('pointermove', showBar);
-stageWrap.addEventListener('pointerdown', showBar);
+stageWrap.addEventListener('pointerdown', (e) => {
+  showBar();
+  if (state.live && !e.target.closest('button')) setTimeout(() => liveInput.focus(), 0);
+});
 
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && state.clean && !state.recording) setClean(false, { fullscreen: false });
@@ -570,11 +680,14 @@ document.addEventListener('keydown', (e) => {
 
   if (e.key === 'Escape') {
     if (modalOpen) return; // o <dialog> fecha-se sozinho
-    if (state.recording) cancelRecording();
-    else if (counting) {
+    if (state.recording) {
+      if (state.rec.live) finishRecording();
+      else cancelRecording();
+    } else if (counting) {
       cancelCountdown();
       redraw();
     } else if (state.clean) setClean(false);
+    else if (state.live) setLive(false);
     else if (body.classList.contains('panel-open') && innerWidth <= 860) setPanel(false);
     return;
   }
@@ -595,6 +708,9 @@ document.addEventListener('keydown', (e) => {
     restart();
   } else if (key === 'f' && !state.recording) {
     setClean(!state.clean);
+  } else if (key === 'l' && !state.recording && !state.clean) {
+    e.preventDefault(); // senão o "l" seria escrito no balão
+    setLive(!state.live);
   }
 });
 
@@ -616,5 +732,5 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
 }
 
 if (new URLSearchParams(location.search).has('debug')) {
-  window.__digita = { settings, player, renderer, audio, state, draw: (tm) => renderer.draw(timeline, tm), get timeline() { return timeline; } };
+  window.__digita = { live, settings, player, renderer, audio, state, draw: (tm) => renderer.draw(timeline, tm), get timeline() { return timeline; } };
 }

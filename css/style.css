@@ -95,6 +95,13 @@ body {
 }
 #stage { display: block; }
 
+/* escrita ao vivo: textarea invisível que recebe o teclado */
+.live-input { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; resize: none; font-size: 16px; pointer-events: none; }
+.live-hint { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); margin: 0; padding: 8px 14px; max-width: calc(100% - 24px); border-radius: 10px; background: rgba(15, 17, 21, 0.85); border: 1px solid var(--border); color: var(--muted); font-size: 13px; text-align: center; pointer-events: none; z-index: 4; }
+.live-hint b { color: var(--text); }
+body.live #btnLive { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+body.clean .live-hint { display: none; }
+
 /* contagem 3-2-1 */
 .countdown {
   position: absolute;

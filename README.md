@@ -8,7 +8,8 @@ Gerador de vídeos de **balões de chat com efeito de digitação**, para criado
 
 - **Palco em `<canvas>`** (nítido em ecrãs HiDPI) com balões estilo iMessage (claro/escuro), WhatsApp, Minimal e Personalizado; cauda no último balão do grupo; entrada com escala + fade + bounce; máximo de balões visíveis configurável; quebra de linha automática; emojis.
 - **Avatar** opcional (imagem local recortada em círculo, alinhado ao último balão) e nome acima do primeiro balão.
-- **Sons sintetizados** com Web Audio (sem ficheiros): clicky, thocky, membrana, máquina de escrever (com «ding»), toque de telemóvel; volume, variação de tom e de ritmo, som próprio para espaço/Enter, som de «enviado», botão «testar» em cada preset e upload de um som próprio (.mp3/.wav).
+- **Escrever ao vivo** (botão ou `L`): escreves com o teclado diretamente no palco; `Enter` envia, `Shift+Enter` muda de linha, `>` no início faz uma resposta à direita, `Backspace` corrige. Cada tecla toca o som no mesmo instante em que a letra aparece, e também se pode **gravar** assim (`Esc` termina e abre a pré-visualização).
+- **Sons sintetizados** com Web Audio (sem ficheiros), modelando um teclado mecânico real: clique do interruptor, pancada na placa com ressonâncias do corpo, **som de soltar a tecla**, estabilizadores no espaço/Enter, variação por tecla, posição estéreo e um pouco de «sala». Presets: clicky, thocky, membrana, máquina de escrever (com «ding»), toque de telemóvel; volume, ambiente, variação de tom e de ritmo, som próprio para espaço/Enter, som de «enviado», botão «testar» em cada preset e upload de um som próprio (.mp3/.wav). Os toques são agendados com precisão de amostra (não ao fotograma), e há um ajuste de **sincronização (±150 ms)** para compensar atrasos de colunas/Bluetooth ou do vídeo gravado.
 - **Roteiro** com sintaxe simples, estimativa de duração, guardar/carregar (localStorage) e exportar/importar `.json`.
 - **Fundo**: verde `#00B140`, azul `#0047BB`, preto, cor própria ou transparente (WebM, avançado).
 - **Dois modos**: *Apresentação* (modo limpo, sem gravar) e *Gravar no site* (16:9, 9:16, 1:1; 30/60 fps; MP4 se o navegador suportar, senão WebM; com ou sem som).
@@ -59,7 +60,8 @@ npm test
 | `R` | gravar (durante a gravação: terminar). **No modo limpo: reiniciar** |
 | `Enter` | reiniciar (modo limpo) |
 | `F` | modo limpo |
-| `Esc` | fechar janela · sair do modo limpo · cancelar gravação |
+| `L` | escrever ao vivo |
+| `Esc` | fechar janela · sair do modo limpo / ao vivo · cancelar gravação (numa gravação ao vivo: terminar) |
 
 ## Privacidade
 
@@ -86,6 +88,7 @@ js/renderer.js        desenho do palco em canvas, em função do tempo t
 js/audio.js           sons sintetizados (Web Audio) + saída para gravação
 js/recorder.js        MediaRecorder, escolha de formato, nome do ficheiro
 js/player.js          relógio de reprodução e disparo de sons
+js/live.js            sessão «escrever ao vivo»
 js/settings.js        preferências e roteiros (localStorage com try/catch)
 js/ui.js              painel de configurações, avisos, downloads
 js/i18n.js            traduções (pt, en)
@@ -108,6 +111,7 @@ Verificado automaticamente em **Chromium 141** (o mesmo motor do Chrome e do Edg
 
 Outras notas:
 
+- Os sons são sintetizados e verificados por análise (níveis sem clipping, espectro de cada preset), mas a **qualidade percebida é subjetiva**: afina volume, ambiente e sincronização no painel, ou carrega uma gravação tua do teu teclado como som próprio.
 - **Mantém o separador visível durante a gravação.** Em segundo plano o navegador pára de desenhar e o vídeo pode perder imagens; a app avisa se isso acontecer.
 - A **duração** de ficheiros WebM gravados no Chrome pode não vir nos metadados; alguns leitores/editores mostram-na em falta (reexportar com o editor resolve).
 - O formato mostrado («MP4 (H.264)») é o pedido ao navegador; builds sem codecs proprietários (ex.: Chromium open-source) podem gravar outro codec dentro do contentor MP4.

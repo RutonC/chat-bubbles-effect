@@ -5,6 +5,8 @@ export const LANGUAGES = { pt: 'Português', en: 'English' };
 
 const pt = {
   'top.script': 'Roteiro',
+  'top.live': 'Escrever ao vivo',
+  'live.hint': '<b>Ao vivo:</b> escreve com o teclado · <kbd>Enter</kbd> envia · <kbd>Shift+Enter</kbd> nova linha · <kbd>&gt;</kbd> no início = resposta · <kbd>Esc</kbd> sai',
   'top.play': 'Reproduzir',
   'top.pause': 'Pausar',
   'top.resume': 'Retomar',
@@ -39,12 +41,12 @@ const pt = {
 
   'howto.title': 'Como usar o Digita',
   'howto.s1': '<b>Escreve o roteiro:</b> cada linha é uma mensagem de chat.',
-  'howto.s2': '<b>Reproduz</b> e ajusta aparência, sons e tempos no painel de configurações.',
+  'howto.s2': '<b>Reproduz</b> (ou usa <b>Escrever ao vivo</b> e escreve direto no palco) e ajusta aparência, sons e tempos no painel de configurações.',
   'howto.s3': '<b>Captura:</b> usa o <b>Modo limpo</b> com OBS, CapCut ou o gravador do sistema, ou clica em <b>Gravar</b> para exportar o vídeo daqui.',
   'howto.s4': 'No teu editor, aplica <b>chroma key</b> ao fundo verde e põe os balões sobre o vídeo.',
   'howto.shortcuts': 'Atalhos',
   'howto.shortcutsBody':
-    '<kbd>Espaço</kbd> reproduzir/pausar · <kbd>R</kbd> gravar (no modo limpo: reiniciar) · <kbd>Enter</kbd> reiniciar no modo limpo · <kbd>F</kbd> modo limpo · <kbd>Esc</kbd> fechar/sair',
+    '<kbd>Espaço</kbd> reproduzir/pausar · <kbd>R</kbd> gravar (no modo limpo: reiniciar) · <kbd>Enter</kbd> reiniciar no modo limpo · <kbd>F</kbd> modo limpo · <kbd>L</kbd> escrever ao vivo · <kbd>Esc</kbd> fechar/sair',
   'howto.start': 'Começar',
 
   'rec.title': 'Gravação concluída',
@@ -139,6 +141,9 @@ const pt = {
   'f.sound.volume': 'Volume',
   'f.sound.pitchVar': 'Variação de tom',
   'f.sound.timingVar': 'Variação de ritmo',
+  'f.sound.room': 'Ambiente (sala)',
+  'f.sound.offset': 'Sincronização do som (ms)',
+  'f.sound.release': 'Som ao soltar a tecla',
   'f.sound.spaceEnterDiff': 'Som diferente para espaço e Enter',
   'f.sound.sentSound': 'Som de «mensagem enviada»',
   'f.sound.ding': '«Ding» no fim (máquina de escrever)',
@@ -174,6 +179,8 @@ const pt = {
 
 const en = {
   'top.script': 'Script',
+  'top.live': 'Type live',
+  'live.hint': '<b>Live:</b> type on your keyboard · <kbd>Enter</kbd> sends · <kbd>Shift+Enter</kbd> new line · <kbd>&gt;</kbd> first = reply · <kbd>Esc</kbd> exits',
   'top.play': 'Play',
   'top.pause': 'Pause',
   'top.resume': 'Resume',
@@ -208,12 +215,12 @@ const en = {
 
   'howto.title': 'How to use Digita',
   'howto.s1': '<b>Write the script:</b> each line is a chat message.',
-  'howto.s2': '<b>Play it</b> and tune looks, sounds and timing in the settings panel.',
+  'howto.s2': '<b>Play it</b> (or use <b>Type live</b> and type straight onto the stage) and tune looks, sounds and timing in the settings panel.',
   'howto.s3': '<b>Capture:</b> use <b>Clean mode</b> with OBS, CapCut or your system recorder, or click <b>Record</b> to export the video here.',
   'howto.s4': 'In your editor, apply <b>chroma key</b> to the green background and lay the bubbles over your video.',
   'howto.shortcuts': 'Shortcuts',
   'howto.shortcutsBody':
-    '<kbd>Space</kbd> play/pause · <kbd>R</kbd> record (in clean mode: restart) · <kbd>Enter</kbd> restart in clean mode · <kbd>F</kbd> clean mode · <kbd>Esc</kbd> close/exit',
+    '<kbd>Space</kbd> play/pause · <kbd>R</kbd> record (in clean mode: restart) · <kbd>Enter</kbd> restart in clean mode · <kbd>F</kbd> clean mode · <kbd>L</kbd> type live · <kbd>Esc</kbd> close/exit',
   'howto.start': 'Get started',
 
   'rec.title': 'Recording finished',
@@ -308,6 +315,9 @@ const en = {
   'f.sound.volume': 'Volume',
   'f.sound.pitchVar': 'Pitch variation',
   'f.sound.timingVar': 'Rhythm variation',
+  'f.sound.room': 'Room ambience',
+  'f.sound.offset': 'Sound sync offset (ms)',
+  'f.sound.release': 'Key release sound',
   'f.sound.spaceEnterDiff': 'Different sound for space and Enter',
   'f.sound.sentSound': '“Message sent” sound',
   'f.sound.ding': 'End-of-line “ding” (typewriter)',

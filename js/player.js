@@ -4,7 +4,7 @@ import { revealCount } from './timeline.js';
 
 export class Player {
   /**
-   * @param {{onFrame:(t:number)=>void, onSound:(kind:string, delay:number)=>void, onState:(s:string)=>void, onEnd:()=>void}} hooks
+   * @param {{onFrame:(t:number)=>void, onSound:(kind:string, delay:number, char:string)=>void, onState:(s:string)=>void, onEnd:()=>void}} hooks
    */
   constructor(hooks) {
     this.hooks = hooks;
@@ -84,26 +84,32 @@ export class Player {
     this._schedule();
   }
 
+  // Os sons são agendados com uma pequena antecipação (LOOK) e o atraso exato de
+  // cada letra, para não ficarem "arredondados" ao fotograma (~16 ms).
   _fireSounds(t) {
+    const LOOK = 0.12;
+    const ahead = t + LOOK;
     const msgs = this.tl.msgs;
-    const keys = [];
+    const events = [];
     for (let i = 0; i < msgs.length; i++) {
       const m = msgs[i];
-      if (m.textStart > t) break;
+      if (m.textStart > ahead) break;
       if (!m.instant) {
-        const n = revealCount(m, t);
-        for (let k = this._shown[i]; k < n; k++) keys.push(m.chars[k] === ' ' ? 'space' : 'key');
+        const n = revealCount(m, ahead);
+        for (let k = this._shown[i]; k < n; k++) {
+          const ch = m.chars[k];
+          events.push([ch === ' ' ? 'space' : 'key', Math.max(0, m.charTimes[k] - t), ch]);
+        }
         this._shown[i] = n;
       }
-      if (!this._sent[i] && t >= m.textEnd) {
+      if (!this._sent[i] && ahead >= m.textEnd) {
         this._sent[i] = true;
-        if (!m.instant) keys.push('enter');
-        keys.push('sent');
-        keys.push('ding');
+        const d = Math.max(0, m.textEnd - t);
+        if (!m.instant) events.push(['enter', d, '']);
+        events.push(['sent', d + 0.02, ''], ['ding', d + 0.02, '']);
       }
     }
     // após um salto de tempo (separador em segundo plano) evita uma rajada de sons
-    const list = keys.length > 8 ? keys.slice(-8) : keys;
-    list.forEach((kind, i) => this.hooks.onSound(kind, i * 0.014));
+    for (const [kind, delay, ch] of events.length > 12 ? events.slice(-12) : events) this.hooks.onSound(kind, delay, ch);
   }
 }

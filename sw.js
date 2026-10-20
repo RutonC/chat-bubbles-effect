@@ -1,9 +1,9 @@
 // Service worker: rede primeiro, cache como reserva, para a app abrir offline.
-const CACHE = 'digita-v1';
+const CACHE = 'digita-v2';
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg',
   'js/main.js', 'js/settings.js', 'js/script-parser.js', 'js/timeline.js', 'js/renderer.js',
-  'js/audio.js', 'js/recorder.js', 'js/player.js', 'js/ui.js', 'js/i18n.js',
+  'js/audio.js', 'js/recorder.js', 'js/player.js', 'js/live.js', 'js/ui.js', 'js/i18n.js',
 ];
 
 self.addEventListener('install', (e) => {

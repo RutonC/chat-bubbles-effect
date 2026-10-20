@@ -84,7 +84,7 @@ export class Renderer {
 
   layoutMessage(msg, maxW) {
     const ctx = this.ctx;
-    const key = `${ctx.font}|${Math.round(maxW)}`;
+    const key = `${ctx.font}|${Math.round(maxW)}|${msg.version || 0}`;
     const cached = this.layouts.get(msg);
     if (cached && cached.key === key) return cached;
 

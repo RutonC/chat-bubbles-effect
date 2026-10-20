@@ -13,6 +13,7 @@
 <body>
   <svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
     <symbol id="i-script" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path class="fill" d="M7 5h4v14H7zM13 5h4v14h-4z"/></symbol>
     <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
@@ -30,6 +31,7 @@
     <a class="brand" href="./" aria-label="Digita"><span class="brand-mark" aria-hidden="true"></span>Digita</a>
     <nav class="actions" aria-label="Ações">
       <button class="btn" id="btnScript" type="button"><svg class="ico"><use href="#i-script"/></svg><span data-i18n="top.script">Roteiro</span></button>
+      <button class="btn" id="btnLive" type="button" aria-pressed="false"><svg class="ico"><use href="#i-keyboard"/></svg><span data-i18n="top.live">Escrever ao vivo</span></button>
       <button class="btn primary" id="btnPlay" type="button"><svg class="ico"><use href="#i-play"/></svg><span id="btnPlayLabel" data-i18n="top.play">Reproduzir</span></button>
       <button class="btn icon-only" id="btnRestart" type="button" data-i18n-title="top.restart" title="Reiniciar"><svg class="ico"><use href="#i-restart"/></svg></button>
       <button class="btn" id="btnClean" type="button"><svg class="ico"><use href="#i-expand"/></svg><span data-i18n="top.clean">Modo limpo</span></button>
@@ -44,6 +46,8 @@
       <div class="stage-frame" id="stageFrame">
         <canvas id="stage" aria-label="Palco"></canvas>
       </div>
+      <p class="live-hint" id="liveHint" data-i18n-html="live.hint" hidden></p>
+      <textarea class="live-input" id="liveInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Escrever ao vivo" tabindex="-1"></textarea>
       <div class="countdown" id="countdown" hidden aria-live="assertive"></div>
       <div class="clean-bar" id="cleanBar">
         <button class="btn" id="cbPlay" type="button"><svg class="ico"><use href="#i-play"/></svg></button>
