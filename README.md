@@ -75,6 +75,7 @@ Nenhum vídeo, imagem, áudio ou roteiro sai do dispositivo. O vídeo gravado é
 | **Netlify** | *Publish directory*: `.` e sem comando de build. `_headers` define os cabeçalhos. |
 | **GitHub Pages / outro** | Publica a raiz do repositório (o app usa só caminhos relativos). |
 | **Docker / Nginx** | `docker build -t digita .` e `docker run -p 8080:80 digita` |
+| **Dokploy** | Application → Provider *GitHub* → Build Type *Dockerfile* (`./Dockerfile`, contexto `.`); em *Domains* define o domínio com **HTTPS** e porta do contentor **80**. |
 
 ## Estrutura
 
