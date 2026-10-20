@@ -31,7 +31,10 @@ function lsJSON(key, fallback) {
   }
 }
 
-export const SAMPLE_SCRIPT = ['Hello world!', 'blah blah blah', "Hey, what's up? It's Takuya here. Long time no see!"].join('\n');
+export const SAMPLE_SCRIPT = ['Olá, pessoal!', 'Bem-vindos ao meu canal.', 'Hoje vou falar convosco só com mensagens, sem usar a voz. 😊'].join('\n');
+
+// Exemplo antigo (inglês): quem o tem guardado passa a ver o novo exemplo em português.
+const OLD_SAMPLE = ['Hello world!', 'blah blah blah', "Hey, what's up? It's Takuya here. Long time no see!"].join('\n');
 
 export const DEFAULTS = {
   lang: 'pt',
@@ -152,7 +155,7 @@ export const ScriptStore = {
   },
   loadCurrent() {
     const v = lsGet(KEY_LAST);
-    return v === null ? SAMPLE_SCRIPT : v;
+    return v === null || v === OLD_SAMPLE ? SAMPLE_SCRIPT : v;
   },
   saveCurrent(text) {
     lsSet(KEY_LAST, text);
