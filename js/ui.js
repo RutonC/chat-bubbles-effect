@@ -48,6 +48,7 @@ const SECTIONS = [
       { type: 'range', path: 'layout.marginX', min: 0, max: 400, step: 4, unit: 'px' },
       { type: 'range', path: 'layout.marginY', min: 0, max: 400, step: 4, unit: 'px' },
       { type: 'range', path: 'layout.maxVisible', min: 1, max: 10, step: 1 },
+      { type: 'range', path: 'layout.hideAfter', min: 0, max: 30, step: 0.5, unit: 's' },
       { type: 'select', path: 'layout.replyPlacement', options: ['column', 'edge'], optKey: (v) => `o.reply.${v}` },
     ],
   },

@@ -46,7 +46,7 @@ export const DEFAULTS = {
     tail: 'curl',
     shadow: false,
   },
-  layout: { fontSize: 42, maxWidth: 760, marginX: 64, marginY: 64, maxVisible: 4, replyPlacement: 'column' },
+  layout: { fontSize: 42, maxWidth: 760, marginX: 64, marginY: 64, maxVisible: 4, hideAfter: 3, replyPlacement: 'column' },
   timing: {
     mode: 'typewriter',
     cps: 14,

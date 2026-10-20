@@ -62,8 +62,11 @@ function redraw() {
   if (state.live) return renderer.draw(live.timeline, live.now());
   if (player.state === 'playing') return;
   if (!timeline) return;
-  const tm = player.state === 'idle' ? (timeline.msgs.length ? timeline.previewT : -1) : player.t;
+  const idle = player.state === 'idle';
+  const tm = idle ? (timeline.msgs.length ? timeline.previewT : -1) : player.t;
+  renderer.noHide = idle; // a pré-visualização parada mostra todos os balões
   renderer.draw(timeline, tm);
+  renderer.noHide = false;
 }
 
 function hasMessages() {

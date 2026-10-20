@@ -56,6 +56,7 @@ export class Renderer {
     this.avatarImage = null;
     this.layouts = new WeakMap();
     this.bgOverride = undefined; // undefined = usar o das definições
+    this.noHide = false; // true na pré-visualização parada: mostra tudo, sem o desaparecimento temporizado
   }
 
   setConfig(settings) {
@@ -180,11 +181,16 @@ export class Renderer {
 
     for (let i = last; i >= 0; i--) {
       const m = msgs[i];
-      let fade = 1;
+      // Sai quando é empurrado por balões a mais ou, se configurado, passado
+      // `hideAfter` segundos depois de enviado. O que acontecer primeiro.
+      let exitT = Infinity;
       const evictor = msgs[i + layout.maxVisible];
-      if (evictor && evictor.enterT <= t) {
-        const q = (t - evictor.enterT) / EXIT_DUR;
-        if (q >= 1) break; // este e todos os mais antigos já saíram
+      if (evictor && evictor.enterT <= t) exitT = evictor.enterT;
+      if (layout.hideAfter > 0 && !this.noHide) exitT = Math.min(exitT, m.textEnd + layout.hideAfter);
+      let fade = 1;
+      if (t >= exitT) {
+        const q = (t - exitT) / EXIT_DUR;
+        if (q >= 1) break; // este e todos os mais antigos já saíram (textEnd cresce com o índice)
         fade = 1 - q;
       }
 
