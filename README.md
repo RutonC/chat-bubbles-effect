@@ -1,0 +1,116 @@
+# Digita
+
+Gerador de vídeos de **balões de chat com efeito de digitação**, para criadores de conteúdo que querem «falar» com o público através de mensagens de texto. Escreves um roteiro, as mensagens aparecem no canto inferior esquerdo com indicador «a escrever…», texto letra a letra e sons de teclado, sobre fundo verde (chroma key). No fim, gravas e descarregas o vídeo — ou captas o palco com OBS / CapCut / gravador de ecrã.
+
+**Tudo corre no navegador.** Não há backend, upload nem analytics: roteiros e preferências ficam em `localStorage`; vídeo, avatar e sons próprios existem só em memória.
+
+## Funcionalidades
+
+- **Palco em `<canvas>`** (nítido em ecrãs HiDPI) com balões estilo iMessage (claro/escuro), WhatsApp, Minimal e Personalizado; cauda no último balão do grupo; entrada com escala + fade + bounce; máximo de balões visíveis configurável; quebra de linha automática; emojis.
+- **Avatar** opcional (imagem local recortada em círculo, alinhado ao último balão) e nome acima do primeiro balão.
+- **Sons sintetizados** com Web Audio (sem ficheiros): clicky, thocky, membrana, máquina de escrever (com «ding»), toque de telemóvel; volume, variação de tom e de ritmo, som próprio para espaço/Enter, som de «enviado», botão «testar» em cada preset e upload de um som próprio (.mp3/.wav).
+- **Roteiro** com sintaxe simples, estimativa de duração, guardar/carregar (localStorage) e exportar/importar `.json`.
+- **Fundo**: verde `#00B140`, azul `#0047BB`, preto, cor própria ou transparente (WebM, avançado).
+- **Dois modos**: *Apresentação* (modo limpo, sem gravar) e *Gravar no site* (16:9, 9:16, 1:1; 30/60 fps; MP4 se o navegador suportar, senão WebM; com ou sem som).
+- Interface em português, pronta para mais idiomas (`js/i18n.js` já traz inglês); PWA que funciona offline depois de carregada.
+
+## Correr localmente
+
+Não há passo de build — são ficheiros estáticos com módulos ES.
+
+```bash
+npm start            # servidor sem dependências em http://localhost:8080
+# ou qualquer servidor estático:
+python3 -m http.server 8080
+```
+
+> Abre por `http://localhost` (ou HTTPS). Os módulos ES e o service worker não funcionam em `file://`.
+
+Testes da lógica (parser, linha do tempo, traduções) — Node 18+:
+
+```bash
+npm test
+```
+
+## Como usar
+
+1. **Roteiro**: uma linha = uma mensagem.
+
+   | Sintaxe | Efeito |
+   | --- | --- |
+   | linha vazia | pausa extra (configurável) |
+   | `[pausa 2s]` | pausa de 2 s (`1.5s`, `500ms` também) |
+   | `[rapido]` / `[lento]` | velocidade da **próxima** mensagem (`[normal]` repõe) |
+   | `> texto` | mensagem do lado direito (balão azul, «resposta») |
+   | `\> texto` | começa com um `>` literal |
+   | `\n` dentro do texto | quebra de linha no mesmo balão |
+
+2. **Reproduzir** e afinar aparência, sons e tempos no painel *Configurações*.
+3. **Capturar**:
+   - *Modo limpo* (botão ou `F`): só o palco, em ecrã inteiro, para OBS/CapCut/gravador do sistema. A contagem 3-2-1 e o cursor escondido são opcionais. Ao mexer o rato (ou tocar) aparece uma barra discreta para reproduzir/reiniciar/sair.
+   - *Gravar* (botão ou `R`): contagem 3-2-1 → reproduz o roteiro → pára sozinho → pré-visualização local → **Descarregar** ou **Descartar**. Ficheiro: `digita-AAAA-MM-DD-HHMM.mp4/.webm`.
+4. No editor de vídeo, aplica **chroma key** ao verde.
+
+### Atalhos
+
+| Tecla | Ação |
+| --- | --- |
+| `Espaço` | reproduzir / pausar / retomar |
+| `R` | gravar (durante a gravação: terminar). **No modo limpo: reiniciar** |
+| `Enter` | reiniciar (modo limpo) |
+| `F` | modo limpo |
+| `Esc` | fechar janela · sair do modo limpo · cancelar gravação |
+
+## Privacidade
+
+Nenhum vídeo, imagem, áudio ou roteiro sai do dispositivo. O vídeo gravado é um `Blob` em memória; ao descarregar ou descartar, o URL é revogado (`URL.revokeObjectURL`) e não fica cópia. A política de segurança (CSP) incluída nos ficheiros de deploy bloqueia ligações a outros domínios (`connect-src 'self'`).
+
+## Deploy (site estático)
+
+| Plataforma | Como |
+| --- | --- |
+| **Vercel** | Importa o repositório; *Framework: Other*, sem build nem output directory. `vercel.json` já define os cabeçalhos. |
+| **Netlify** | *Publish directory*: `.` e sem comando de build. `_headers` define os cabeçalhos. |
+| **GitHub Pages / outro** | Publica a raiz do repositório (o app usa só caminhos relativos). |
+| **Docker / Nginx** | `docker build -t digita .` e `docker run -p 8080:80 digita` |
+
+## Estrutura
+
+```
+index.html            página única
+css/style.css         interface
+js/main.js            orquestração (modos, atalhos, gravação, modais)
+js/script-parser.js   roteiro → itens
+js/timeline.js        itens + tempos → linha do tempo determinística
+js/renderer.js        desenho do palco em canvas, em função do tempo t
+js/audio.js           sons sintetizados (Web Audio) + saída para gravação
+js/recorder.js        MediaRecorder, escolha de formato, nome do ficheiro
+js/player.js          relógio de reprodução e disparo de sons
+js/settings.js        preferências e roteiros (localStorage com try/catch)
+js/ui.js              painel de configurações, avisos, downloads
+js/i18n.js            traduções (pt, en)
+sw.js, manifest.*     PWA / offline
+tests/                testes Node (node:test)
+```
+
+Como a cena é uma função pura de `t`, o ecrã e a gravação mostram exatamente o mesmo, e pausar/reiniciar são triviais.
+
+## Navegadores e limitações
+
+Verificado automaticamente em **Chromium 141** (o mesmo motor do Chrome e do Edge): reprodução, modo limpo, gravação 1920×1080 com áudio (o ficheiro resultante foi analisado com `ffprobe`), descarregar/descartar e libertação da memória, e interface em ecrã de telemóvel. **Firefox não foi testado** neste ambiente; o que se segue para ele vem da documentação de compatibilidade, não de testes.
+
+| | Chrome / Edge (Chromium) | Firefox | Safari |
+| --- | --- | --- | --- |
+| Reproduzir, sons, modo limpo | ✅ | esperado ✅ | esperado ✅ |
+| Gravar | ✅ | esperado ✅ (WebM) | depende da versão |
+| MP4 (H.264) | ✅ nas versões recentes (a app mostra o formato antes de gravar) | ❌ — usa WebM | ✅ |
+| WebM VP9 com transparência | ✅ no Chromium testado (canal alfa confirmado); confirma no teu editor | ❌ — avisa e usa o verde | ❌ |
+
+Outras notas:
+
+- **Mantém o separador visível durante a gravação.** Em segundo plano o navegador pára de desenhar e o vídeo pode perder imagens; a app avisa se isso acontecer.
+- A **duração** de ficheiros WebM gravados no Chrome pode não vir nos metadados; alguns leitores/editores mostram-na em falta (reexportar com o editor resolve).
+- O formato mostrado («MP4 (H.264)») é o pedido ao navegador; builds sem codecs proprietários (ex.: Chromium open-source) podem gravar outro codec dentro do contentor MP4.
+- Os sons próprios, o avatar e o vídeo **não são guardados**: ao recarregar a página têm de ser carregados de novo.
+- Fontes: usa as do sistema (para funcionar offline e sem pedidos externos); o aspeto varia ligeiramente entre sistemas operativos, tal como os emojis.
+- Pré-visualizar áudio exige um clique/tecla antes (regra dos navegadores para Web Audio).

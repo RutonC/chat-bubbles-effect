@@ -1,0 +1,11 @@
+{
+  "name": "digita",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gerador de vídeos de chat bubbles com efeito de digitação (100% client-side).",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

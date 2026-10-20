@@ -1,0 +1,12 @@
+{
+  "name": "Digita — balões de chat com efeito de digitação",
+  "short_name": "Digita",
+  "description": "Gera vídeos de balões de chat com efeito de digitação e sons de teclado. Tudo no teu navegador.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "lang": "pt",
+  "icons": [{ "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

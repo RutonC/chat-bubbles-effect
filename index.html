@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Digita — balões de chat com efeito de digitação</title>
+  <meta name="description" content="Escreve um roteiro de mensagens e grava balões de chat com efeito de digitação e sons de teclado sobre fundo verde. Tudo no teu navegador.">
+  <meta name="theme-color" content="#0f1115">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-script" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path class="fill" d="M8 5v14l11-7z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path class="fill" d="M7 5h4v14H7zM13 5h4v14h-4z"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="i-record" viewBox="0 0 24 24"><circle class="fill" cx="12" cy="12" r="7"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h9M19 6h1M4 12h3M13 12h7M4 18h11M21 18h-1"/><circle cx="16" cy="6" r="2.2"/><circle cx="10" cy="12" r="2.2"/><circle cx="18" cy="18" r="2.2"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 20h14"/></symbol>
+  </svg>
+
+  <header class="topbar" id="topbar">
+    <a class="brand" href="./" aria-label="Digita"><span class="brand-mark" aria-hidden="true"></span>Digita</a>
+    <nav class="actions" aria-label="Ações">
+      <button class="btn" id="btnScript" type="button"><svg class="ico"><use href="#i-script"/></svg><span data-i18n="top.script">Roteiro</span></button>
+      <button class="btn primary" id="btnPlay" type="button"><svg class="ico"><use href="#i-play"/></svg><span id="btnPlayLabel" data-i18n="top.play">Reproduzir</span></button>
+      <button class="btn icon-only" id="btnRestart" type="button" data-i18n-title="top.restart" title="Reiniciar"><svg class="ico"><use href="#i-restart"/></svg></button>
+      <button class="btn" id="btnClean" type="button"><svg class="ico"><use href="#i-expand"/></svg><span data-i18n="top.clean">Modo limpo</span></button>
+      <button class="btn rec" id="btnRecord" type="button"><svg class="ico"><use href="#i-record"/></svg><span data-i18n="top.record">Gravar</span></button>
+      <button class="btn" id="btnSettings" type="button" aria-controls="panel" aria-expanded="true"><svg class="ico"><use href="#i-settings"/></svg><span data-i18n="top.settings">Configurações</span></button>
+      <button class="btn icon-only" id="btnHelp" type="button" data-i18n-title="top.help" title="Como usar"><svg class="ico"><use href="#i-help"/></svg></button>
+    </nav>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <section class="stage-wrap" id="stageWrap">
+      <div class="stage-frame" id="stageFrame">
+        <canvas id="stage" aria-label="Palco"></canvas>
+      </div>
+      <div class="countdown" id="countdown" hidden aria-live="assertive"></div>
+      <div class="clean-bar" id="cleanBar">
+        <button class="btn" id="cbPlay" type="button"><svg class="ico"><use href="#i-play"/></svg></button>
+        <button class="btn" id="cbRestart" type="button"><svg class="ico"><use href="#i-restart"/></svg></button>
+        <button class="btn" id="cbExit" type="button"><svg class="ico"><use href="#i-close"/></svg><span data-i18n="bar.exit">Sair</span></button>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel" aria-label="Configurações">
+      <div class="panel-head">
+        <strong data-i18n="top.settings">Configurações</strong>
+        <button class="btn icon-only panel-close" id="panelClose" type="button" aria-label="Fechar"><svg class="ico"><use href="#i-close"/></svg></button>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+    </aside>
+    <div class="panel-backdrop" id="panelBackdrop"></div>
+  </main>
+
+  <footer class="privacy" id="privacy">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z"/></svg>
+    <span data-i18n="privacy.note">Tudo é processado no teu dispositivo. Nenhum vídeo é enviado ou guardado online.</span>
+  </footer>
+
+  <!-- Roteiro -->
+  <dialog class="modal modal-wide" id="dlgScript" aria-labelledby="scriptTitle">
+    <form method="dialog" class="modal-inner" id="scriptForm">
+      <div class="modal-head">
+        <h2 id="scriptTitle" data-i18n="script.title">Roteiro</h2>
+        <button class="btn icon-only" type="button" data-close aria-label="Fechar"><svg class="ico"><use href="#i-close"/></svg></button>
+      </div>
+      <textarea id="scriptText" class="script-text" spellcheck="false" data-i18n-placeholder="script.placeholder" placeholder="Uma mensagem por linha…"></textarea>
+      <p class="hint" id="scriptStats"></p>
+      <details class="syntax">
+        <summary data-i18n="script.syntax">Sintaxe</summary>
+        <p data-i18n-html="script.syntaxBody"></p>
+      </details>
+      <div class="store-row">
+        <input id="scriptName" type="text" maxlength="60" data-i18n-placeholder="script.name" placeholder="Nome do roteiro">
+        <button class="btn" type="button" id="scriptSave"><span data-i18n="script.save">Guardar</span></button>
+        <select id="scriptPick" aria-label="Roteiros guardados"></select>
+        <button class="btn" type="button" id="scriptLoad"><span data-i18n="script.load">Carregar</span></button>
+        <button class="btn icon-only" type="button" id="scriptDelete" data-i18n-title="script.delete" title="Apagar"><svg class="ico"><use href="#i-trash"/></svg></button>
+      </div>
+      <div class="store-row">
+        <button class="btn" type="button" id="scriptExport"><svg class="ico"><use href="#i-download"/></svg><span data-i18n="script.export">Exportar .json</span></button>
+        <button class="btn" type="button" id="scriptImport"><svg class="ico"><use href="#i-upload"/></svg><span data-i18n="script.import">Importar .json</span></button>
+        <input id="scriptImportFile" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" type="button" data-close data-i18n="script.cancel">Cancelar</button>
+        <button class="btn primary" type="submit" id="scriptStart" value="start" data-i18n="script.start">Iniciar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Como usar -->
+  <dialog class="modal" id="dlgHowto" aria-labelledby="howtoTitle">
+    <div class="modal-inner">
+      <div class="modal-head">
+        <h2 id="howtoTitle" data-i18n="howto.title">Como usar o Digita</h2>
+        <button class="btn icon-only" type="button" data-close aria-label="Fechar"><svg class="ico"><use href="#i-close"/></svg></button>
+      </div>
+      <ol class="steps">
+        <li data-i18n-html="howto.s1"></li>
+        <li data-i18n-html="howto.s2"></li>
+        <li data-i18n-html="howto.s3"></li>
+        <li data-i18n-html="howto.s4"></li>
+      </ol>
+      <h3 data-i18n="howto.shortcuts">Atalhos</h3>
+      <p class="hint" data-i18n-html="howto.shortcutsBody"></p>
+      <p class="hint privacy-inline" data-i18n="privacy.note"></p>
+      <div class="modal-foot">
+        <button class="btn primary" type="button" data-close data-i18n="howto.start">Começar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Pré-visualização da gravação -->
+  <dialog class="modal modal-wide" id="dlgPreview" aria-labelledby="previewTitle">
+    <div class="modal-inner">
+      <div class="modal-head">
+        <h2 id="previewTitle" data-i18n="rec.title">Gravação concluída</h2>
+      </div>
+      <video id="previewVideo" class="preview-video" controls playsinline></video>
+      <p class="hint" id="previewInfo"></p>
+      <p class="hint warn" id="previewWarn" hidden></p>
+      <p class="hint" data-i18n="rec.freed"></p>
+      <div class="modal-foot">
+        <button class="btn" type="button" id="previewDiscard"><svg class="ico"><use href="#i-trash"/></svg><span data-i18n="rec.discard">Descartar</span></button>
+        <button class="btn primary" type="button" id="previewDownload"><svg class="ico"><use href="#i-download"/></svg><span data-i18n="rec.download">Descarregar</span></button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
