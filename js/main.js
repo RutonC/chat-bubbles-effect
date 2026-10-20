@@ -246,6 +246,14 @@ async function startRecording() {
     toast(t('toast.noAudio'));
     withAudio = false;
   }
+  if (withAudio) {
+    try {
+      await audio.ctx.resume();
+    } catch {
+      /* ver verificação abaixo */
+    }
+    if (audio.ctx.state !== 'running') toast(t('toast.audioBlocked'), 4500);
+  }
   let format = pickFormat({ withAudio, transparent });
   if (transparent && !format) {
     toast(t('toast.transparentFallback'), 4500);
@@ -339,6 +347,8 @@ function showPreview(blob, info) {
   $('#previewInfo').textContent = t('rec.info', { fmt: info.format.label, size, name });
   const warn = $('#previewWarn');
   const notes = [];
+  if (info.withAudio && recorder.audioPeak < 0.002) notes.push(t('rec.noAudio'));
+  if (info.withAudio && info.format.ext === 'mp4' && /opus/i.test(recorder.actualMime)) notes.push(t('rec.opusMp4'));
   if (info.hidden) notes.push(t('rec.hiddenWarn'));
   if (info.transparent) notes.push(t('rec.transparentNote'));
   warn.textContent = notes.join(' ');

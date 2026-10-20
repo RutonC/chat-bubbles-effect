@@ -7,7 +7,9 @@ export const FORMATS = {
 };
 
 const MP4 = {
-  audio: ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4;codecs=h264,aac', 'video/mp4'],
+  // Com áudio só aceitamos AAC: o "video/mp4" genérico pode levar Opus dentro de MP4,
+  // que muitos leitores/editores (Windows Filmes e TV, QuickTime...) reproduzem sem som.
+  audio: ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4;codecs=h264,aac'],
   video: ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1', 'video/mp4;codecs=h264', 'video/mp4'],
 };
 const WEBM = {
@@ -53,6 +55,9 @@ export class VideoRecorder {
     this.rec = null;
     this.chunks = [];
     this.stream = null;
+    this.audioPeak = 0;
+    this.actualMime = '';
+    this._meter = 0;
   }
 
   get active() {
@@ -74,7 +79,12 @@ export class VideoRecorder {
       if (e.data && e.data.size) this.chunks.push(e.data);
     };
     this.mime = format.mime;
+    this.actualMime = rec.mimeType || format.mime;
     this.rec = rec;
+    // mede o nível real do áudio enquanto grava, para avisar se saiu em silêncio
+    this.audioPeak = 0;
+    clearInterval(this._meter);
+    if (withAudio) this._meter = setInterval(() => (this.audioPeak = Math.max(this.audioPeak, this.audio.peak())), 40);
     rec.start(500);
   }
 
@@ -105,6 +115,7 @@ export class VideoRecorder {
   }
 
   _cleanup() {
+    clearInterval(this._meter);
     this.stream?.getTracks().forEach((t) => t.stop());
     this.stream = null;
     this.rec = null;

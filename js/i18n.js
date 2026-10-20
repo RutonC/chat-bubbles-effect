@@ -54,6 +54,8 @@ const pt = {
   'rec.discard': 'Descartar',
   'rec.info': '{fmt} · {size} · {name}',
   'rec.freed': 'Depois de descarregares, o vídeo é libertado da memória. Não fica nenhuma cópia.',
+  'rec.noAudio': 'Não foi detetado som durante a gravação. Verifica se o som de tecla não está em «Sem som de teclas», o volume, a opção «Exportar sem som» e se o navegador deixou tocar áudio.',
+  'rec.opusMp4': 'Este MP4 leva áudio Opus, que alguns leitores (Windows Filmes e TV, QuickTime) não reproduzem. Abre-o no VLC ou importa-o no editor; se precisares de compatibilidade total, usa o Chrome/Edge atualizado ou converte o vídeo.',
   'rec.hiddenWarn': 'O separador ficou em segundo plano durante a gravação; o vídeo pode ter perdido imagens.',
   'rec.transparentNote': 'Fundo transparente: confirma no teu editor se o alfa foi preservado (varia com o navegador).',
 
@@ -67,6 +69,7 @@ const pt = {
   'toast.soundLoaded': 'Som personalizado carregado.',
   'toast.reset': 'Configurações repostas.',
   'toast.recFail': 'Falha na gravação.',
+  'toast.audioBlocked': 'O navegador bloqueou o áudio. Clica na página e tenta de novo.',
   'toast.noAudio': 'Este navegador não suporta áudio Web.',
 
   'sec.look': 'Aparência',
@@ -228,6 +231,8 @@ const en = {
   'rec.discard': 'Discard',
   'rec.info': '{fmt} · {size} · {name}',
   'rec.freed': 'After you download, the video is released from memory. No copy is kept.',
+  'rec.noAudio': 'No sound was detected while recording. Check that the key sound is not set to “No key sound”, the volume, the “Export without sound” option, and that the browser allowed audio.',
+  'rec.opusMp4': 'This MP4 carries Opus audio, which some players (Windows Movies & TV, QuickTime) cannot play. Open it in VLC or import it into your editor; for full compatibility use an up-to-date Chrome/Edge or convert the video.',
   'rec.hiddenWarn': 'The tab was in the background while recording; the video may have dropped frames.',
   'rec.transparentNote': 'Transparent background: check in your editor that alpha was preserved (it varies by browser).',
 
@@ -241,6 +246,7 @@ const en = {
   'toast.soundLoaded': 'Custom sound loaded.',
   'toast.reset': 'Settings reset.',
   'toast.recFail': 'Recording failed.',
+  'toast.audioBlocked': 'The browser blocked audio. Click the page and try again.',
   'toast.noAudio': 'This browser does not support Web Audio.',
 
   'sec.look': 'Appearance',

@@ -60,6 +60,10 @@ export class AudioEngine {
       comp.release.value = 0.12;
       this.master.connect(comp);
       comp.connect(ctx.destination);
+      this.analyser = ctx.createAnalyser();
+      this.analyser.fftSize = 512;
+      this._buf = new Float32Array(this.analyser.fftSize);
+      comp.connect(this.analyser);
       if (ctx.createMediaStreamDestination) {
         this.streamDest = ctx.createMediaStreamDestination();
         comp.connect(this.streamDest);
@@ -91,6 +95,15 @@ export class AudioEngine {
     }
     if (this.ctx.state === 'suspended') this.ctx.resume?.()?.catch?.(() => {});
     return true;
+  }
+
+  /** Nível de pico (0..1) do que está a sair neste momento. */
+  peak() {
+    if (!this.analyser) return 0;
+    this.analyser.getFloatTimeDomainData(this._buf);
+    let p = 0;
+    for (let i = 0; i < this._buf.length; i++) p = Math.max(p, Math.abs(this._buf[i]));
+    return p;
   }
 
   _impulse(ctx) {
